@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web-httpd
+  labels:
+    app: web-httpd
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: web-httpd
+  template:
+    metadata:
+      labels:
+        app: web-httpd
+    spec:
+      containers:
+      - name: nginx
+        image: httpd:2.4
+        ports:
+        - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: web-httpd
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-type: external
+    service.beta.kubernetes.io/aws-load-balancer-nlb-target-type: instance
+    service.beta.kubernetes.io/aws-load-balancer-scheme: internet-facing
+spec:
+  selector:
+    app: web-httpd
+  ports:
+    - port: 80
+      targetPort: 80
+      protocol: TCP
+  type: LoadBalancer
+# Reference
+# https://kubernetes-sigs.github.io/aws-load-balancer-controller/v2.4/guide/service/nlb/
+# https://kubernetes.io/docs/concepts/services-networking/service/
